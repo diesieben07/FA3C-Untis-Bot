@@ -2,25 +2,27 @@ package de.takeweiland.untisbot
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import io.ktor.client.HttpClient
-import io.ktor.client.call.call
 import io.ktor.client.features.cookies.AcceptAllCookiesStorage
 import io.ktor.client.features.cookies.HttpCookies
 import io.ktor.client.features.cookies.cookies
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.request.accept
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.parameter
 import io.ktor.client.request.request
 import io.ktor.client.request.url
+import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.Parameters
 import org.threeten.extra.PackedFields
 import java.time.*
 
 
-class UntisApi(private val baseUrl: String, private val school: String) {
+class UntisApi(private val baseUrl: String, private val school: String, private val username: String, private val password: String) {
 
     private val http = HttpClient {
+        followRedirects = false
         install(HttpCookies) {
             storage = AcceptAllCookiesStorage()
 
@@ -33,29 +35,32 @@ class UntisApi(private val baseUrl: String, private val school: String) {
 //        }
     }
 
-    var sessionCookieTime: Instant? = null
+    private var sessionCookieTime: Instant? = null
 
     private suspend fun obtainSessionCookie() {
         val hasCookie = http.cookies(baseUrl).any { it.name == "JSESSIONID" }
         val sct = sessionCookieTime
         val now = Instant.now()
 
-        if (!hasCookie || sct == null || Duration.between(now, sct).toMinutes() >= 5) {
-            http.call {
+        if (!hasCookie || sct == null || Duration.between(sct, now).toMinutes() >= 5) {
+            http.request<Any?> {
+                accept(ContentType("text", "html"))
                 url("$baseUrl/")
                 parameter("school", school)
             }
-            http.call {
+            http.request<Any?> {
                 url("$baseUrl/j_spring_security_check")
                 method = HttpMethod.Post
                 body = FormDataContent(Parameters.build {
                     append("school", school)
-                    append("j_username", "schueler")
-                    append("j_password", "schueler")
+                    append("j_username", username)
+                    append("j_password", password)
                     append("token", "")
                 })
             }
             sessionCookieTime = now
+        } else {
+            println("still have good session cookie")
         }
     }
 

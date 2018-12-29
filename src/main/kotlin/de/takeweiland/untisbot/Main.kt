@@ -11,17 +11,23 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.User
 import org.telegram.telegrambots.meta.bots.AbsSender
 import org.telegram.telegrambots.meta.logging.BotLogger
-import java.io.File
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.logging.Level
+import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
     ApiContextInitializer.init()
     BotLogger.setLevel(Level.ALL)
 
-    val api = UntisApi("https://mese.webuntis.com/WebUntis", "bbs-haarentor")
+    val config = loadConfig()
+    if (config == null) {
+        println("Please correct config file")
+        exitProcess(0)
+    }
+
+    val api = UntisApi(config.untis.url, config.untis.school, config.untis.user, config.untis.password)
     val cls = "FA3C"
 //
     val classId = runBlocking {
@@ -29,9 +35,8 @@ fun main(args: Array<String>) {
     }
     println("Class ID: $classId")
 
-    val telegramToken = File("telegram-token").readText().trim()
     val telegram = TelegramBotsApi()
-    telegram.registerBot(MyBot("fa3c_untis_bot", telegramToken, api, classId, cls))
+    telegram.registerBot(MyBot(config.telegram.botName, config.telegram.token, api, classId, cls))
 }
 
 class MyBot(username: String, private val token: String, untis: UntisApi, classId: Int, cls: String) :

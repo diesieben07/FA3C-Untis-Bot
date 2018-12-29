@@ -19,6 +19,8 @@ repositories {
 dependencies {
     compile(kotlin("stdlib-jdk8"))
 
+    compile("com.electronwill.night-config:toml:3.4.2")
+
     compile("io.ktor:ktor-client-core-jvm:$ktorVersion")
     compile("io.ktor:ktor-client-apache:$ktorVersion")
     compile("io.ktor:ktor-client-logging-jvm:$ktorVersion")

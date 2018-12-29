@@ -7,7 +7,8 @@
 4. Output will be in `build/distributions`
 5. To run the bot, unzip/untar the distribution and run `/bin/UntisBot` in the resulting folder.
 
-Note: Telegram token for the bot must be put in `telegram-token` file in current working directory.
+Note: Configuration must be done in `config.toml` file in current working directory.
+If it does not exist, bot will create it upon first run.
 
 ## Development in IntelliJ-IDEA
 After cloning the repository simply do File > Open and select the `build.gradle.kts` file to import the project.

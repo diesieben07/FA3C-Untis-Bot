@@ -1,0 +1,12 @@
+
+[untis]
+	url = ""
+	school = ""
+	class = ""
+	user = ""
+	password = ""
+
+[telegram]
+	botName = ""
+	token = ""
+
