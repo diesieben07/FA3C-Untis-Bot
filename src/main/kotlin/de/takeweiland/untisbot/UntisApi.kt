@@ -15,6 +15,8 @@ import io.ktor.client.request.url
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.Parameters
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.threeten.extra.PackedFields
 import java.time.*
 
@@ -36,31 +38,34 @@ class UntisApi(private val baseUrl: String, private val school: String, private 
     }
 
     private var sessionCookieTime: Instant? = null
+    private val cookieLock = Mutex()
 
     private suspend fun obtainSessionCookie() {
-        val hasCookie = http.cookies(baseUrl).any { it.name == "JSESSIONID" }
-        val sct = sessionCookieTime
-        val now = Instant.now()
+        cookieLock.withLock {
+            val hasCookie = http.cookies(baseUrl).any { it.name == "JSESSIONID" }
+            val sct = sessionCookieTime
+            val now = Instant.now()
 
-        if (!hasCookie || sct == null || Duration.between(sct, now).toMinutes() >= 5) {
-            http.request<Any?> {
-                accept(ContentType("text", "html"))
-                url("$baseUrl/")
-                parameter("school", school)
+            if (!hasCookie || sct == null || Duration.between(sct, now).toMinutes() >= 5) {
+                http.request<Any?> {
+                    accept(ContentType("text", "html"))
+                    url("$baseUrl/")
+                    parameter("school", school)
+                }
+                http.request<Any?> {
+                    url("$baseUrl/j_spring_security_check")
+                    method = HttpMethod.Post
+                    body = FormDataContent(Parameters.build {
+                        append("school", school)
+                        append("j_username", username)
+                        append("j_password", password)
+                        append("token", "")
+                    })
+                }
+                sessionCookieTime = now
+            } else {
+                println("still have good session cookie")
             }
-            http.request<Any?> {
-                url("$baseUrl/j_spring_security_check")
-                method = HttpMethod.Post
-                body = FormDataContent(Parameters.build {
-                    append("school", school)
-                    append("j_username", username)
-                    append("j_password", password)
-                    append("token", "")
-                })
-            }
-            sessionCookieTime = now
-        } else {
-            println("still have good session cookie")
         }
     }
 

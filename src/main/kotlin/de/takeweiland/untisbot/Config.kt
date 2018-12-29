@@ -1,9 +1,9 @@
 package de.takeweiland.untisbot
 
 import com.electronwill.nightconfig.core.ConfigSpec
-import com.electronwill.nightconfig.core.file.FileConfig
+import com.electronwill.nightconfig.core.file.CommentedFileConfig
 
-data class Config(val telegram: Telegram, val untis: Untis) {
+data class Config(val schedule: String, val telegram: Telegram, val untis: Untis) {
 
     data class Telegram(val token: String, val botName: String)
     data class Untis(val url: String, val school: String, val cls: String, val user: String, val password: String)
@@ -12,6 +12,7 @@ data class Config(val telegram: Telegram, val untis: Untis) {
 
 fun loadConfig(): Config? {
     val spec = ConfigSpec().apply {
+        define("schedule", "55 23 * * TUE", Any::isNonBlankString)
         define("telegram.token", "", Any::isNonBlankString)
         define("telegram.botName", "", Any::isNonBlankString)
         define("untis.url", "", Any::isNonBlankString)
@@ -21,14 +22,18 @@ fun loadConfig(): Config? {
         define("untis.password", "", Any::isNonBlankString)
     }
 
-    FileConfig.builder("config.toml")
+    CommentedFileConfig.builder("config.toml")
         .defaultData(Thread.currentThread().contextClassLoader.getResource("blank-config.toml"))
         .build()
         .use { config ->
             config.load()
+
+            config.setComment("schedule", "Crontab expression for when to report classes for the day")
+
             config.save()
             return if (spec.isCorrect(config)) {
                 Config(
+                    schedule = config.get("schedule"),
                     telegram = Config.Telegram(
                         token = config.get("telegram.token"),
                         botName = config.get("telegram.botName")

@@ -19,6 +19,8 @@ repositories {
 dependencies {
     compile(kotlin("stdlib-jdk8"))
 
+    compile("ch.qos.logback:logback-classic:1.2.3")
+
     compile("com.electronwill.night-config:toml:3.4.2")
 
     compile("io.ktor:ktor-client-core-jvm:$ktorVersion")
@@ -31,6 +33,8 @@ dependencies {
 
     compile("org.telegram:telegrambots:4.1")
     compile("org.telegram:telegrambotsextensions:4.1")
+
+    compile("org.quartz-scheduler:quartz:2.2.1")
 }
 
 configure<JavaPluginConvention> {
