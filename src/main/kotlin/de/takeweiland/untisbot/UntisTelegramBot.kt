@@ -65,15 +65,16 @@ class UntisTelegramBot(
         val chats = synchronized(this) {
             subscribedChats
         }
-        notifyHours(chats)
+        notifyHours(chats, displayEmpty = false)
     }
 
-    private fun notifyHours(chats: Collection<Long>, overwriteDate: LocalDate? = null) {
+    private fun notifyHours(chats: Collection<Long>, overwriteDate: LocalDate? = null, displayEmpty: Boolean = false) {
         val now = overwriteDate ?: LocalDate.now(ZoneId.of("Europe/Berlin"))
         val message = StringBuilder()
         val periods = runBlocking { untis.timeTableEntries(classId, now, true) }
 
         if (periods.isEmpty()) {
+            if (!displayEmpty) return
             message.append("*Hier ist gar nix.*")
         } else {
             message.append("*Es steht an:*")
@@ -106,7 +107,7 @@ class UntisTelegramBot(
             } else {
                 LocalDate.parse(arguments.first())
             }
-            notifyHours(listOf(chat.id), now)
+            notifyHours(listOf(chat.id), now, displayEmpty = true)
         }
     }
 

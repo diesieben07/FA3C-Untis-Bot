@@ -9,6 +9,7 @@ import org.quartz.impl.StdSchedulerFactory
 import org.telegram.telegrambots.ApiContextInitializer
 import org.telegram.telegrambots.meta.TelegramBotsApi
 import org.telegram.telegrambots.meta.logging.BotLogger
+import java.util.*
 import java.util.logging.Level
 import kotlin.system.exitProcess
 
@@ -42,7 +43,7 @@ fun main(args: Array<String>) {
         .build()
     val trigger = TriggerBuilder.newTrigger()
         .startNow()
-        .withSchedule(CronScheduleBuilder.cronSchedule(config.schedule))
+        .withSchedule(CronScheduleBuilder.cronSchedule(config.schedule).inTimeZone(TimeZone.getTimeZone(config.timeZone)))
         .build()
 
     scheduler.scheduleJob(job, trigger)
