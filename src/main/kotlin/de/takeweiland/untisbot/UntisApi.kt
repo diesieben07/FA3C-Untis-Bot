@@ -64,7 +64,6 @@ class UntisApi(private val baseUrl: String, private val school: String, private 
                 }
                 sessionCookieTime = now
             } else {
-                println("still have good session cookie")
             }
         }
     }
