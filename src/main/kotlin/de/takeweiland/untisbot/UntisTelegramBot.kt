@@ -31,6 +31,7 @@ class UntisTelegramBot(
         register(SubscribeCommand())
         register(UnsubscribeCommand())
         register(TimetableCommand())
+        register(WichtigCommand())
 
         loadSubscriptions()
     }
@@ -108,6 +109,12 @@ class UntisTelegramBot(
                 LocalDate.parse(arguments.first())
             }
             notifyHours(listOf(chat.id), now, displayEmpty = true)
+        }
+    }
+
+    private inner class WichtigCommand : BotCommand("wichtig", "") {
+        override fun execute(absSender: AbsSender, user: User?, chat: Chat, arguments: Array<out String>?) {
+            absSender.execute(SendMessage(chat.id, "Nö."))
         }
     }
 
