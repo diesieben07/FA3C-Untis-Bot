@@ -63,7 +63,6 @@ class UntisApi(private val baseUrl: String, private val school: String, private 
                     })
                 }
                 sessionCookieTime = now
-            } else {
             }
         }
     }
