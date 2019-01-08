@@ -1,4 +1,4 @@
-# Untis-Bot for FA3C Telegram group
+# Untis-Bot for FA3C Telegram group [![wercker status](https://app.wercker.com/status/4ae26cdd649bac8513130a26096b1509/s/master "wercker status")](https://app.wercker.com/project/byKey/4ae26cdd649bac8513130a26096b1509)
 
 ## Building
 1. JDK must be installed
