@@ -16,3 +16,4 @@ build:
     - java/gradle:
       task: build
       cache_project_cache: true
+      build_file: build.gradle.kts
