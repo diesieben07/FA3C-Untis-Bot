@@ -14,6 +14,11 @@ build:
   steps:
     # https://github.com/wercker/step-gradle
     - java/gradle:
+      version: 4.10
       task: build
       cache_project_cache: true
       build_file: build.gradle.kts
+    - buildartifcats:
+      name: buildartifacts
+      code: |
+        cp ./build/distributions/UntisBot-1.0-SNAPSHOT.tar $WERCKER_REPORT_ARTIFACTS_DIR
