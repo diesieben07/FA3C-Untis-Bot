@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto
 import org.telegram.telegrambots.meta.api.objects.Chat
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.User
@@ -32,6 +33,7 @@ class UntisTelegramBot(
         register(UnsubscribeCommand())
         register(TimetableCommand())
         register(WichtigCommand())
+        register(TroffiCommand())
 
         loadSubscriptions()
     }
@@ -115,6 +117,16 @@ class UntisTelegramBot(
     private inner class WichtigCommand : BotCommand("wichtig", "") {
         override fun execute(absSender: AbsSender, user: User?, chat: Chat, arguments: Array<out String>?) {
             absSender.execute(SendMessage(chat.id, "Nö."))
+        }
+    }
+
+    private inner class TroffiCommand : BotCommand("emrah", "") {
+        override fun execute(absSender: AbsSender, user: User?, chat: Chat, arguments: Array<out String>?) {
+            absSender.execute(SendPhoto().apply {
+                setChatId(chat.id)
+                setPhoto("egg.jpg", Thread.currentThread().contextClassLoader.getResourceAsStream("egg.jpg"))
+                caption = "Easter-Egg!"
+            })
         }
     }
 
