@@ -18,7 +18,7 @@ build:
       task: build
       cache_project_cache: true
       build_file: build.gradle.kts
-    - scripts:
+    - script:
       name: buildartifacts
       code: |
         cp ./build/distributions/UntisBot-1.0-SNAPSHOT.tar $WERCKER_REPORT_ARTIFACTS_DIR
