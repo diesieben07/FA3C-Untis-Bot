@@ -27,11 +27,12 @@ fun main(args: Array<String>) {
     val classId = runBlocking {
         api.getClassId(config.untis.cls) ?: throw Exception("Unknown class")
     }
+//    val classId = 123
     println("Class ID: $classId")
 
     val telegram = TelegramBotsApi()
     val telegramBot =
-        UntisTelegramBot(config.telegram.botName, config.telegram.token, api, classId, config.untis.cls)
+        UntisTelegramBot(config.telegram.botName, config.telegram.token, GiphyApi(config.giphy.apiKey), api, classId, config.untis.cls)
     telegram.registerBot(telegramBot)
 
     val scheduler = StdSchedulerFactory.getDefaultScheduler()

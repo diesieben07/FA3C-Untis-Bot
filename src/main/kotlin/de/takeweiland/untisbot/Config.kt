@@ -5,10 +5,11 @@ import com.electronwill.nightconfig.core.file.CommentedFileConfig
 import java.time.DateTimeException
 import java.time.ZoneId
 
-data class Config(val schedule: String, val timeZone: ZoneId,  val telegram: Telegram, val untis: Untis) {
+data class Config(val schedule: String, val timeZone: ZoneId,  val telegram: Telegram, val untis: Untis, val giphy: Giphy) {
 
     data class Telegram(val token: String, val botName: String)
     data class Untis(val url: String, val school: String, val cls: String, val user: String, val password: String)
+    data class Giphy(val apiKey: String)
 
 }
 
@@ -34,6 +35,7 @@ fun loadConfig(): Config? {
         define("untis.class", "", Any::isNonBlankString)
         define("untis.user", "", Any::isNonBlankString)
         define("untis.password", "", Any::isNonBlankString)
+        define("giphy.apikey", "", Any::isNonBlankString)
     }
 
     CommentedFileConfig.builder("config.toml")
@@ -59,6 +61,9 @@ fun loadConfig(): Config? {
                         cls = config.get("untis.class"),
                         user = config.get("untis.user"),
                         password = config.get("untis.password")
+                    ),
+                    giphy = Config.Giphy(
+                        apiKey = config.get("giphy.apikey")
                     )
                 )
             } else {
