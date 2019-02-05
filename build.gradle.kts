@@ -31,8 +31,8 @@ dependencies {
 
     compile("org.threeten:threeten-extra:1.4")
 
-    compile("org.telegram:telegrambots:4.1")
-    compile("org.telegram:telegrambotsextensions:4.1")
+    compile("org.telegram:telegrambots:4.1.2")
+    compile("org.telegram:telegrambotsextensions:4.1.2")
 
     compile("org.quartz-scheduler:quartz:2.2.1")
 }

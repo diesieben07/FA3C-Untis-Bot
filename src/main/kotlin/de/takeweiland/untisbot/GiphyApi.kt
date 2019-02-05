@@ -19,10 +19,13 @@ class GiphyApi(private val apiKey: String) {
         followRedirects = false
     }
 
-    suspend fun getRandomGif(): String {
+    suspend fun getRandomGif(tag: String? = null): String {
         val response = http.request<JsonNode> {
             url("$baseUrl/gifs/random")
             parameter("api_key", apiKey)
+            if (tag != null) {
+                parameter("tag", tag)
+            }
         }
         return response["data"]["images"]["original_mp4"]["mp4"].asText()
     }

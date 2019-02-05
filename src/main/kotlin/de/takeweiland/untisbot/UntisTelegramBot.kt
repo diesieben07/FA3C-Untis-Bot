@@ -1,28 +1,18 @@
 package de.takeweiland.untisbot
 
 import kotlinx.coroutines.runBlocking
-import org.apache.http.client.config.RequestConfig
-import org.apache.http.client.methods.HttpPost
-import org.apache.http.entity.BufferedHttpEntity
-import org.apache.http.entity.ContentType
-import org.apache.http.entity.mime.MultipartEntityBuilder
-import org.apache.http.impl.client.CloseableHttpClient
-import org.apache.http.util.EntityUtils
-import org.telegram.telegrambots.Constants.SOCKET_TIMEOUT
-import org.telegram.telegrambots.bots.DefaultAbsSender
 import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand
 import org.telegram.telegrambots.meta.api.methods.send.SendAnimation
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto
-import org.telegram.telegrambots.meta.api.objects.*
+import org.telegram.telegrambots.meta.api.objects.Chat
+import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.User
 import org.telegram.telegrambots.meta.bots.AbsSender
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 import java.io.File
 import java.io.FileNotFoundException
-import java.io.IOException
 import java.net.URL
-import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -222,107 +212,18 @@ class UntisTelegramBot(
 
     private inner class GiphyCommand : BotCommand("easteregg", "Tüdelü") {
 
-        override fun execute(absSender: AbsSender, user: User, chat: Chat, arguments: Array<out String>?) {
+        override fun execute(absSender: AbsSender, user: User, chat: Chat, arguments: Array<out String>) {
+            val tag = arguments.getOrNull(0)
             val gif = runBlocking {
-                giphy.getRandomGif()
+                giphy.getRandomGif(tag)
             }
             val connection = URL(gif).openConnection()
             connection.addRequestProperty("Accept", "video/mp4")
-            absSender.fixedSendAnimation(SendAnimation().apply {
+            absSender.execute(SendAnimation().apply {
                 setChatId(chat.id)
                 setAnimation("giphy.mp4", connection.getInputStream())
                 caption = "Tüdelü!"
             })
         }
-
-        private val TEXT_PLAIN_CONTENT_TYPE = ContentType.create("text/plain", StandardCharsets.UTF_8)
-
-        private fun configuredHttpPost(url: String): HttpPost {
-            val httppost = HttpPost(url)
-            httppost.config = requestConfig
-            return httppost
-        }
-
-        private val requestConfig = RequestConfig.copy(RequestConfig.custom().build())
-        .setSocketTimeout(SOCKET_TIMEOUT)
-        .setConnectTimeout(SOCKET_TIMEOUT)
-        .setConnectionRequestTimeout(SOCKET_TIMEOUT).build()
-
-        private fun addInputFile(
-            builder: MultipartEntityBuilder,
-            file: InputFile,
-            fileField: String,
-            addField: Boolean
-        ) {
-            if (file.isNew) {
-                if (file.newMediaFile != null) {
-                    builder.addBinaryBody(
-                        file.mediaName,
-                        file.newMediaFile,
-                        ContentType.APPLICATION_OCTET_STREAM,
-                        file.mediaName
-                    )
-                } else if (file.newMediaStream != null) {
-                    builder.addBinaryBody(
-                        file.mediaName,
-                        file.newMediaStream,
-                        ContentType.APPLICATION_OCTET_STREAM,
-                        file.mediaName
-                    )
-                }
-            }
-
-            if (addField) {
-                builder.addTextBody(fileField, file.attachName, TEXT_PLAIN_CONTENT_TYPE)
-            }
-        }
-
-        private val AbsSender.httpClient: CloseableHttpClient
-            get() = DefaultAbsSender::class.java.getDeclaredField("httpClient").run {
-                isAccessible = true
-                get(this@httpClient) as CloseableHttpClient
-            }
-
-        @Throws(IOException::class)
-        private fun AbsSender.sendHttpPostRequest(httppost: HttpPost): String {
-            return httpClient.execute(httppost, options.httpContext).use { response ->
-                val ht = response.entity
-                val buf = BufferedHttpEntity(ht)
-                EntityUtils.toString(buf, StandardCharsets.UTF_8)
-            }
-        }
-
-        private fun AbsSender.fixedSendAnimation(sendAnimation: SendAnimation): Message? {
-            sendAnimation.validate()
-            try {
-                val url = baseUrl + SendAnimation.PATH
-                val httppost = configuredHttpPost(url)
-                val builder = MultipartEntityBuilder.create()
-                builder.setLaxMode()
-                builder.setCharset(StandardCharsets.UTF_8)
-                builder.addTextBody(SendAnimation.CHATID_FIELD, sendAnimation.chatId, TEXT_PLAIN_CONTENT_TYPE)
-                addInputFile(builder, sendAnimation.animation, SendAnimation.ANIMATION_FIELD, true)
-
-                if (sendAnimation.caption != null) {
-                    builder.addTextBody(SendAnimation.CAPTION_FIELD, sendAnimation.caption, TEXT_PLAIN_CONTENT_TYPE)
-                    if (sendAnimation.parseMode != null) {
-                        builder.addTextBody(
-                            SendAnimation.PARSEMODE_FIELD,
-                            sendAnimation.parseMode,
-                            TEXT_PLAIN_CONTENT_TYPE
-                        )
-                    }
-                }
-                val multipart = builder.build()
-                httppost.entity = multipart
-
-                return sendAnimation.deserializeResponse(sendHttpPostRequest(httppost))
-            } catch (e: IOException) {
-                throw TelegramApiException("Unable to edit message media", e)
-            }
-
-        }
-
     }
-
 }
